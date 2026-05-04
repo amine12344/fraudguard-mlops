@@ -24,7 +24,7 @@ Build an end-to-end MLOps system using:
 
 ## Current Milestone
 
-M1 — Repository Bootstrap + First CI
+M1 — Repository Bootstrap + First CI + Data Ingestion Pipeline
 
 ## Local Setup
 
@@ -49,3 +49,53 @@ make install
 make lint
 make test
 ```
+
+## Data Ingestion and Validation
+
+### Prerequisites
+
+Download the IEEE-CIS Fraud Detection dataset from Kaggle and place the files in `data/raw/`:
+
+```text
+data/raw/train_transaction.csv
+data/raw/train_identity.csv
+data/raw/test_transaction.csv
+data/raw/test_identity.csv
+```
+
+### Data Operations
+
+Create a sample dataset from the raw IEEE-CIS data:
+
+```bash
+make data-sample
+```
+
+Create a synthetic sample for testing (no raw data required):
+
+```bash
+make data-synthetic
+```
+
+Validate data quality and schema:
+
+```bash
+make data-check    # Basic validation
+make data-validate # Pandera schema validation
+```
+
+### Data Validation Reports
+
+Validation reports are generated in `reports/data/`:
+
+- `sample_validation.json`: Basic data quality metrics
+- `validation_report.json`: Pandera schema validation results
+
+### CI/CD
+
+The GitHub Actions workflow includes automated data validation:
+
+- **lint-and-test**: Code quality checks and unit tests
+- **validate-synthetic-data**: End-to-end data pipeline validation using synthetic data
+
+Reports are uploaded as artifacts and summarized in the job output.
