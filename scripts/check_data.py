@@ -36,9 +36,25 @@ def validate_sample(path: Path = DATA_PATH) -> dict:
 
     if missing_columns:
         raise ValueError(f"Missing required columns: {missing_columns}")
+        report = {
+        "path": str(path),
+        "rows": int(len(df)),
+        "columns": int(len(df.columns)),
+        "fraud_rate": fraud_rate,
+        "missing_columns": missing_columns,
+        "status": "failed missed columns",
+    }
 
     if df.empty:
         raise ValueError("Dataset sample is empty.")
+        report = {
+        "path": str(path),
+        "rows": int(len(df)),
+        "columns": int(len(df.columns)),
+        "fraud_rate": fraud_rate,
+        "missing_columns": missing_columns,
+        "status": "failed empty dataset",
+    }
 
     if not set(df["isFraud"].dropna().unique()).issubset({0, 1}):
         raise ValueError("Target column isFraud must be binary.")
