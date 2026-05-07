@@ -57,7 +57,7 @@ jobs:
           echo "- Tests completed" >> $GITHUB_STEP_SUMMARY
           echo "- Test report uploaded as artifact" >> $GITHUB_STEP_SUMMARY
   
-  validate-synthetic-data:
+  validate-synthetic-data-build-features:
     needs: lint-and-test
     name: Validate synthetic data sample
     runs-on: ubuntu-latest
