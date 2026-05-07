@@ -57,7 +57,7 @@ jobs:
           echo "- Tests completed" >> $GITHUB_STEP_SUMMARY
           echo "- Test report uploaded as artifact" >> $GITHUB_STEP_SUMMARY
   
-  validate-synthetic-data:
+  validate-synthetic-data-build-features:
     needs: lint-and-test
     name: Validate synthetic data sample
     runs-on: ubuntu-latest
@@ -136,3 +136,30 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- Pandera validation completed" >> $GITHUB_STEP_SUMMARY
           echo "- Pandera validation report uploaded as artifact" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Build feature dataset
+        env:
+          PYTHONPATH: .
+        run: |
+          python products/fraudguard/features/build_features.py
+
+      - name: Upload feature report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: feature-contract-report
+          path: reports/features
+      
+      - name: Write job summary
+        if: always()
+        run: |
+          echo "## FraudGuard CI Feature Validation" >> $GITHUB_STEP_SUMMARY
+          if [ -f reports/features/feature_contract.json ]; then
+            echo "### Feature Contract Validation Results" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat reports/features/feature_contract.json >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Feature contract validation completed" >> $GITHUB_STEP_SUMMARY
+          echo "- Feature contract report uploaded as artifact" >> $GITHUB_STEP_SUMMARY
