@@ -46,3 +46,10 @@ features-build:
 features-check:
 	. .venv/bin/activate && PYTHONPATH=. python -c "from products.fraudguard.features.build_features import write_feature_report; write_feature_report()"
 
+.PHONY: train model-check
+
+train:
+	. .venv/bin/activate && PYTHONPATH=. python products/fraudguard/training/train.py
+
+model-check:
+	. .venv/bin/activate && PYTHONPATH=. python ci/quality-gates/check_metrics.py reports/model/metrics.json

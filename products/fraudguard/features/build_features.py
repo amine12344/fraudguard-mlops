@@ -29,6 +29,7 @@ def build_feature_dataset(input_path: Path = INPUT_PATH) -> tuple[pd.DataFrame, 
 
 
 def write_feature_report(input_path: Path = INPUT_PATH) -> dict:
+    print(f"Validating feature dataset from {input_path}...")
     df = pd.read_parquet(input_path)
     validate_feature_columns(list(df.columns))
 

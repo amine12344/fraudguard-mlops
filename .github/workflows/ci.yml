@@ -59,7 +59,7 @@ jobs:
   
   validate-synthetic-data-build-features:
     needs: lint-and-test
-    name: Validate synthetic data sample
+    name: Validate synthetic data sample and feature build 
     runs-on: ubuntu-latest
         
     steps:

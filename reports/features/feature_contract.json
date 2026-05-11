@@ -1,6 +1,6 @@
 {
   "input_path": "data/samples/fraud_sample.parquet",
-  "rows": 5000,
+  "rows": 10000,
   "required_columns": [
     "TransactionAmt",
     "card1",
@@ -38,18 +38,18 @@
   "missing_values": {
     "TransactionAmt": 0,
     "card1": 0,
-    "card2": 991,
-    "card3": 1299,
-    "card5": 826,
-    "addr1": 941,
-    "addr2": 1685,
+    "card2": 145,
+    "card3": 19,
+    "card5": 80,
+    "addr1": 1127,
+    "addr2": 1127,
     "ProductCD": 0,
-    "card4": 1009,
-    "card6": 1749,
-    "P_emaildomain": 1021,
-    "R_emaildomain": 975,
-    "DeviceType": 1652,
-    "DeviceInfo": 1006,
+    "card4": 20,
+    "card6": 19,
+    "P_emaildomain": 1619,
+    "R_emaildomain": 7657,
+    "DeviceType": 7592,
+    "DeviceInfo": 8007,
     "isFraud": 0
   },
   "status": "passed"
