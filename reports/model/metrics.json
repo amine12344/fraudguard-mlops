@@ -1,13 +1,13 @@
 {
-  "threshold": 0.9759711075563678,
-  "roc_auc": 0.9984603997039231,
-  "pr_auc": 0.9506598392674241,
-  "precision": 0.9117647058823529,
-  "recall": 0.8857142857142857,
-  "f1": 0.8985507246376812,
+  "threshold": 0.20225537113666325,
+  "roc_auc": 0.7752627683197633,
+  "pr_auc": 0.22459868523487217,
+  "precision": 0.08566433566433566,
+  "recall": 0.7,
+  "f1": 0.1526479750778816,
   "model_type": "LightGBM",
-  "train_rows": 4000,
-  "test_rows": 1000,
-  "positive_rate": 0.035,
-  "mlflow_run_id": "e223b60ac43d497398a70127960d93e1"
+  "train_rows": 8000,
+  "test_rows": 2000,
+  "positive_rate": 0.0351,
+  "mlflow_run_id": "a3902f196d354deda2060753ccf16b96"
 }
