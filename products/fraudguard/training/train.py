@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 
 import joblib
+import mlflow
+import mlflow.sklearn
 import pandas as pd
 from lightgbm import LGBMClassifier
 from sklearn.model_selection import train_test_split
@@ -80,39 +82,39 @@ def train_model(data_path: Path = DATA_PATH) -> dict:
     METRICS_PATH.write_text(json.dumps(metrics, indent=2))
     REPORT_METRICS_PATH.write_text(json.dumps(metrics, indent=2))
 
-    # if MLFLOW_TRACKING_URI:
-    #     mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-    #     mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
+    if MLFLOW_TRACKING_URI:
+        mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+        mlflow.set_experiment(MLFLOW_EXPERIMENT_NAME)
 
-    #     with mlflow.start_run(run_name="fraudguard-lightgbm-baseline") as run:
-    #         mlflow.log_params(
-    #             {
-    #                 "model_type": "LightGBM",
-    #                 "n_estimators": 150,
-    #                 "learning_rate": 0.05,
-    #                 "class_weight": "balanced",
-    #                 "threshold": metrics["threshold"],
-    #             }
-    #         )
+        with mlflow.start_run(run_name="fraudguard-lightgbm-baseline") as run:
+            mlflow.log_params(
+                {
+                    "model_type": "LightGBM",
+                    "n_estimators": 150,
+                    "learning_rate": 0.05,
+                    "class_weight": "balanced",
+                    "threshold": metrics["threshold"],
+                }
+            )
 
-    #         mlflow.log_metrics(
-    #             {
-    #                 "roc_auc": metrics["roc_auc"],
-    #                 "pr_auc": metrics["pr_auc"],
-    #                 "precision": metrics["precision"],
-    #                 "recall": metrics["recall"],
-    #                 "f1": metrics["f1"],
-    #                 "positive_rate": metrics["positive_rate"],
-    #             }
-    #         )
+            mlflow.log_metrics(
+                {
+                    "roc_auc": metrics["roc_auc"],
+                    "pr_auc": metrics["pr_auc"],
+                    "precision": metrics["precision"],
+                    "recall": metrics["recall"],
+                    "f1": metrics["f1"],
+                    "positive_rate": metrics["positive_rate"],
+                }
+            )
 
-    #         mlflow.log_artifact(str(METRICS_PATH), artifact_path="reports")
-    #         mlflow.sklearn.log_model(pipeline, artifact_path="model")
+            mlflow.log_artifact(str(METRICS_PATH), artifact_path="reports")
+            mlflow.sklearn.log_model(pipeline, artifact_path="model")
 
-    #         metrics["mlflow_run_id"] = run.info.run_id
+            metrics["mlflow_run_id"] = run.info.run_id
 
-    #         METRICS_PATH.write_text(json.dumps(metrics, indent=2))
-    #         REPORT_METRICS_PATH.write_text(json.dumps(metrics, indent=2))
+            METRICS_PATH.write_text(json.dumps(metrics, indent=2))
+            REPORT_METRICS_PATH.write_text(json.dumps(metrics, indent=2))
 
     return metrics
 
