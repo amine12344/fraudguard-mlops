@@ -3,13 +3,12 @@ import os
 from pathlib import Path
 
 import joblib
+import mlflow
+import mlflow.sklearn
 import pandas as pd
 from lightgbm import LGBMClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-
-import mlflow
-import mlflow.sklearn
 
 from products.fraudguard.evaluation.metrics import compute_binary_classification_metrics
 from products.fraudguard.evaluation.thresholding import find_threshold_for_recall
