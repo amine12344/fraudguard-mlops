@@ -1,4 +1,4 @@
-name: registry-dry-run
+name: registry-dryrun
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
       - "products/fraudguard/features/**"
       - "scripts/**"
       - "docker-compose.local.yml"
-      - ".github/workflows/registry-dry-run.yml"
+      - ".github/workflows/registry-dryrun.yml"
   workflow_dispatch:
 
 permissions:
