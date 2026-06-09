@@ -138,3 +138,27 @@ docker-run:
 
 docker-smoke:
 	bash scripts/smoke_test.sh
+
+.PHONY: kind-create kind-delete kind-load deploy-dev kind-status kind-port-forward kind-smoke
+
+kind-create:
+	kind create cluster --name fraudguard --config infra/kind/kind-config.yaml
+
+kind-delete:
+	kind delete cluster --name fraudguard
+
+kind-load:
+	kind load docker-image fraudguard-inference:local --name fraudguard
+
+deploy-dev:
+	kubectl apply -k infra/k8s/overlays/dev
+	kubectl -n fraudguard rollout status deployment/fraudguard-inference --timeout=120s
+
+kind-status:
+	kubectl -n fraudguard get all
+
+kind-port-forward:
+	kubectl -n fraudguard port-forward svc/fraudguard-inference 8000:8000
+
+kind-smoke:
+	bash scripts/smoke_test.sh
