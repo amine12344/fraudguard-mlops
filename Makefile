@@ -127,3 +127,14 @@ promote-model:
 	MLFLOW_MODEL_NAME=$${MLFLOW_MODEL_NAME:-fraudguard-risk-model} \
 	PROMOTION_DRY_RUN=false \
 	python products/fraudguard/training/promote.py
+
+.PHONY: docker-build docker-run docker-smoke
+
+docker-build:
+	docker build -t fraudguard-inference:local -f products/fraudguard/inference/Dockerfile .
+
+docker-run:
+	docker run --rm -p 8000:8000 fraudguard-inference:local
+
+docker-smoke:
+	bash scripts/smoke_test.sh
