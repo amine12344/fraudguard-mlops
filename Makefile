@@ -159,3 +159,20 @@ kind-port-forward:
 
 kind-smoke:
 	bash scripts/smoke_test.sh
+
+.PHONY: deploy-mlflow-kind mlflow-kind-status mlflow-kind-port-forward minio-kind-port-forward
+
+deploy-mlflow-kind:
+	kubectl apply -k platform/mlflow/k8s
+	kubectl -n mlflow rollout status deployment/postgres --timeout=120s
+	kubectl -n mlflow rollout status deployment/minio --timeout=120s
+	kubectl -n mlflow rollout status deployment/mlflow --timeout=180s
+
+mlflow-kind-status:
+	kubectl -n mlflow get all
+
+mlflow-kind-port-forward:
+	kubectl -n mlflow port-forward svc/mlflow 5000:5000
+
+minio-kind-port-forward:
+	kubectl -n mlflow port-forward svc/minio 9000:9000
