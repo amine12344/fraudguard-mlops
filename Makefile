@@ -179,3 +179,19 @@ mlflow-kind-port-forward:
 
 minio-kind-port-forward:
 	kubectl -n mlflow port-forward svc/minio 9000:9000
+
+.PHONY: deploy-monitoring-kind monitoring-status prometheus-port-forward grafana-port-forward
+
+deploy-monitoring-kind:
+	kubectl apply -k platform/monitoring/k8s
+	kubectl -n monitoring rollout status deployment/prometheus --timeout=120s
+	kubectl -n monitoring rollout status deployment/grafana --timeout=120s
+
+monitoring-status:
+	kubectl -n monitoring get all
+
+prometheus-port-forward:
+	kubectl -n monitoring port-forward svc/prometheus 9090:9090
+
+grafana-port-forward:
+	kubectl -n monitoring port-forward svc/grafana 3000:3000
