@@ -5,3 +5,10 @@ resources:
   - namespace.yaml
   - prometheus.yaml
   - grafana.yaml
+  - fraudguard-dashboard-configmap.yaml
+  - grafana-datasource-configmap.yaml
+  - grafana-dashboard-provider-configmap.yaml
+
+patches:
+  - path: grafana-datasource.yaml
+  - path: grafana-dashboard-provider.yaml

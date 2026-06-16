@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fraudguard-dashboard
+  namespace: monitoring
+data:
+  fraudguard-dashboard.json: |
+    {
+      "title": "FraudGuard Inference Dashboard",
+      "schemaVersion": 39,
+      "version": 1,
+      "refresh": "5s",
+      "panels": [
+        {
+          "type": "timeseries",
+          "title": "Prediction Requests",
+          "targets": [
+            {
+              "expr": "rate(fraudguard_requests_total[1m])",
+              "legendFormat": "requests/sec"
+            }
+          ],
+          "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 }
+        },
+        {
+          "type": "timeseries",
+          "title": "Predictions by Decision",
+          "targets": [
+            {
+              "expr": "rate(fraudguard_predictions_total[1m])",
+              "legendFormat": "{{decision}}"
+            }
+          ],
+          "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 }
+        },
+        {
+          "type": "timeseries",
+          "title": "Prediction Latency",
+          "targets": [
+            {
+              "expr": "rate(fraudguard_prediction_latency_seconds_count[1m])",
+              "legendFormat": "prediction latency count"
+            }
+          ],
+          "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 }
+        },
+        {
+          "type": "timeseries",
+          "title": "Fraud Score Histogram",
+          "targets": [
+            {
+              "expr": "rate(fraudguard_prediction_score_bucket[1m])",
+              "legendFormat": "{{le}}"
+            }
+          ],
+          "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 }
+        }
+      ]
+    }

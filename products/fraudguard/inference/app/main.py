@@ -37,14 +37,14 @@ def health() -> dict:
     return {"status": "ok"}
 
 
-@app.get("/metrics")
-def metrics() -> Response:
-    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
-
-
 @app.get("/ready")
 def ready() -> dict:
     return {"ready": model_loader.is_ready()}
+
+
+@app.get("/metrics")
+def metrics() -> Response:
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
 @app.post("/predict", response_model=PredictionResponse)

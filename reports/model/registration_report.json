@@ -2,7 +2,7 @@
   "status": "registered",
   "model_name": "fraudguard-risk-model",
   "model_version": "2",
-  "run_id": "e223b60ac43d497398a70127960d93e1",
-  "model_uri": "runs:/e223b60ac43d497398a70127960d93e1/model",
+  "run_id": "96c69251ede942279e6c7fa6d3f16ae3",
+  "model_uri": "runs:/96c69251ede942279e6c7fa6d3f16ae3/model",
   "alias": "candidate"
 }

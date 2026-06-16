@@ -154,6 +154,9 @@ deploy-dev:
 	kubectl apply -k infra/k8s/overlays/dev
 	kubectl -n fraudguard rollout status deployment/fraudguard-inference --timeout=120s
 
+delete-dev:
+	kubectl delete -k infra/k8s/overlays/dev
+
 kind-status:
 	kubectl -n fraudguard get all
 
@@ -167,6 +170,7 @@ kind-smoke:
 
 deploy-mlflow-kind:
 	kubectl apply -k platform/mlflow/k8s
+	kubectl -n mlflow delete job create-mlflow-bucket --ignore-not-found
 	kubectl -n mlflow rollout status deployment/postgres --timeout=120s
 	kubectl -n mlflow rollout status deployment/minio --timeout=120s
 	kubectl -n mlflow rollout status deployment/mlflow --timeout=180s
@@ -178,7 +182,7 @@ mlflow-kind-port-forward:
 	kubectl -n mlflow port-forward svc/mlflow 5000:5000
 
 minio-kind-port-forward:
-	kubectl -n mlflow port-forward svc/minio 9000:9000
+	kubectl -n mlflow port-forward svc/minio 9000:9000 9001:9001
 
 .PHONY: deploy-monitoring-kind monitoring-status prometheus-port-forward grafana-port-forward
 
