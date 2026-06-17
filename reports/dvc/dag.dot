@@ -1,0 +1,12 @@
+strict digraph {
+"data_synthetic";
+"data_validate";
+"features_build";
+"train";
+"model_check";
+"data_synthetic" -> "data_validate";
+"data_synthetic" -> "features_build";
+"data_synthetic" -> "train";
+"train" -> "model_check";
+}
+

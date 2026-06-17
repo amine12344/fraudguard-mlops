@@ -199,3 +199,51 @@ prometheus-port-forward:
 
 grafana-port-forward:
 	kubectl -n monitoring port-forward svc/grafana 3000:3000
+
+.PHONY: dvc-repro dvc-metrics dvc-status dvc-diff
+
+dvc-repro:
+	. .venv/bin/activate && PYTHONPATH=. dvc repro
+
+dvc-metrics:
+	. .venv/bin/activate && dvc metrics show
+
+dvc-status:
+	. .venv/bin/activate && dvc status
+
+dvc-diff:
+	. .venv/bin/activate && dvc params diff || true
+	. .venv/bin/activate && dvc metrics diff || true
+
+.PHONY: dvc-exp dvc-exp-show dvc-exp-apply dvc-exp-clean
+
+dvc-exp:
+	. .venv/bin/activate && dvc exp run
+
+dvc-exp-show:
+	. .venv/bin/activate && dvc exp show
+
+dvc-exp-apply:
+	. .venv/bin/activate && dvc exp apply
+
+dvc-exp-clean:
+	. .venv/bin/activate && dvc exp remove --all
+
+.PHONY: dvc-metrics-diff dvc-params-diff
+
+dvc-metrics-diff:
+	. .venv/bin/activate && dvc metrics diff || true
+
+dvc-params-diff:
+	. .venv/bin/activate && dvc params diff || true
+
+.PHONY: dvc-dag dvc-dag-dot dvc-lineage
+
+dvc-dag:
+	. .venv/bin/activate && dvc dag
+
+dvc-dag-dot:
+	. .venv/bin/activate && dvc dag --dot > reports/dvc/dag.dot
+
+dvc-lineage:
+	. .venv/bin/activate && PYTHONPATH=. python scripts/generate_dvc_lineage.py
