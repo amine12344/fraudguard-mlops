@@ -1,7 +1,6 @@
 import json
 import os
 from pathlib import Path
-from products.fraudguard.config_loader import load_params
 
 import joblib
 import mlflow
@@ -11,6 +10,7 @@ from lightgbm import LGBMClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
+from products.fraudguard.config_loader import load_params
 from products.fraudguard.evaluation.metrics import compute_binary_classification_metrics
 from products.fraudguard.evaluation.thresholding import find_threshold_for_recall
 from products.fraudguard.features.build_features import build_feature_dataset
@@ -119,7 +119,16 @@ def train_model(data_path: Path = DATA_PATH) -> dict:
             )
 
             mlflow.log_artifact(str(METRICS_PATH), artifact_path="reports")
-            mlflow.sklearn.log_model(pipeline, artifact_path="model")
+            mlflow.sklearn.log_model(
+                pipeline,
+                artifact_path="model",
+                skops_trusted_types=[
+                    "collections.OrderedDict",
+                    "lightgbm.basic.Booster",
+                    "lightgbm.sklearn.LGBMClassifier",
+                    "numpy.dtype",
+                ],
+            )
 
             metrics["mlflow_run_id"] = run.info.run_id
 
