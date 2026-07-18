@@ -127,3 +127,123 @@ promote-model:
 	MLFLOW_MODEL_NAME=$${MLFLOW_MODEL_NAME:-fraudguard-risk-model} \
 	PROMOTION_DRY_RUN=false \
 	python products/fraudguard/training/promote.py
+
+.PHONY: docker-build docker-run docker-smoke
+
+docker-build:
+	docker build -t fraudguard-inference:local -f products/fraudguard/inference/Dockerfile .
+
+docker-run:
+	docker run --rm -p 8000:8000 fraudguard-inference:local
+
+docker-smoke:
+	bash scripts/smoke_test.sh
+
+.PHONY: kind-create kind-delete kind-load deploy-dev kind-status kind-port-forward kind-smoke
+
+kind-create:
+	kind create cluster --name fraudguard --config infra/kind/kind-config.yaml
+
+kind-delete:
+	kind delete cluster --name fraudguard
+
+kind-load:
+	kind load docker-image fraudguard-inference:local --name fraudguard
+
+deploy-dev:
+	kubectl apply -k infra/k8s/overlays/dev
+	kubectl -n fraudguard rollout status deployment/fraudguard-inference --timeout=120s
+
+delete-dev:
+	kubectl delete -k infra/k8s/overlays/dev
+
+kind-status:
+	kubectl -n fraudguard get all
+
+kind-port-forward:
+	kubectl -n fraudguard port-forward svc/fraudguard-inference 8000:8000
+
+kind-smoke:
+	bash scripts/smoke_test.sh
+
+.PHONY: deploy-mlflow-kind mlflow-kind-status mlflow-kind-port-forward minio-kind-port-forward
+
+deploy-mlflow-kind:
+	kubectl apply -k platform/mlflow/k8s
+	kubectl -n mlflow delete job create-mlflow-bucket --ignore-not-found
+	kubectl -n mlflow rollout status deployment/postgres --timeout=120s
+	kubectl -n mlflow rollout status deployment/minio --timeout=120s
+	kubectl -n mlflow rollout status deployment/mlflow --timeout=180s
+
+mlflow-kind-status:
+	kubectl -n mlflow get all
+
+mlflow-kind-port-forward:
+	kubectl -n mlflow port-forward svc/mlflow 5000:5000
+
+minio-kind-port-forward:
+	kubectl -n mlflow port-forward svc/minio 9000:9000 9001:9001
+
+.PHONY: deploy-monitoring-kind monitoring-status prometheus-port-forward grafana-port-forward
+
+deploy-monitoring-kind:
+	kubectl apply -k platform/monitoring/k8s
+	kubectl -n monitoring rollout status deployment/prometheus --timeout=120s
+	kubectl -n monitoring rollout status deployment/grafana --timeout=120s
+
+monitoring-status:
+	kubectl -n monitoring get all
+
+prometheus-port-forward:
+	kubectl -n monitoring port-forward svc/prometheus 9090:9090
+
+grafana-port-forward:
+	kubectl -n monitoring port-forward svc/grafana 3000:3000
+
+.PHONY: dvc-repro dvc-metrics dvc-status dvc-diff
+
+dvc-repro:
+	. .venv/bin/activate && PYTHONPATH=. dvc repro
+
+dvc-metrics:
+	. .venv/bin/activate && dvc metrics show
+
+dvc-status:
+	. .venv/bin/activate && dvc status
+
+dvc-diff:
+	. .venv/bin/activate && dvc params diff || true
+	. .venv/bin/activate && dvc metrics diff || true
+
+.PHONY: dvc-exp dvc-exp-show dvc-exp-apply dvc-exp-clean
+
+dvc-exp:
+	. .venv/bin/activate && dvc exp run
+
+dvc-exp-show:
+	. .venv/bin/activate && dvc exp show
+
+dvc-exp-apply:
+	. .venv/bin/activate && dvc exp apply
+
+dvc-exp-clean:
+	. .venv/bin/activate && dvc exp remove --all
+
+.PHONY: dvc-metrics-diff dvc-params-diff
+
+dvc-metrics-diff:
+	. .venv/bin/activate && dvc metrics diff || true
+
+dvc-params-diff:
+	. .venv/bin/activate && dvc params diff || true
+
+.PHONY: dvc-dag dvc-dag-dot dvc-lineage
+
+dvc-dag:
+	. .venv/bin/activate && dvc dag
+
+dvc-dag-dot:
+	. .venv/bin/activate && dvc dag --dot > reports/dvc/dag.dot
+
+dvc-lineage:
+	. .venv/bin/activate && PYTHONPATH=. python scripts/generate_dvc_lineage.py

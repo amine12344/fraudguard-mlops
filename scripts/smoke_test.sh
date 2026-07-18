@@ -31,3 +31,7 @@ curl -s -X POST "$BASE_URL/predict" \
     "DeviceInfo": "Windows"
   }'
 echo
+
+echo "Checking metrics..."
+curl -s "$BASE_URL/metrics" | head -n 20
+echo

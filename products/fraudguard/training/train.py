@@ -10,6 +10,7 @@ from lightgbm import LGBMClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
+from products.fraudguard.config_loader import load_params
 from products.fraudguard.evaluation.metrics import compute_binary_classification_metrics
 from products.fraudguard.evaluation.thresholding import find_threshold_for_recall
 from products.fraudguard.features.build_features import build_feature_dataset
@@ -31,21 +32,30 @@ def train_model(data_path: Path = DATA_PATH) -> dict:
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
+    params = load_params()
+    train_params = params.get("train", {})
+
+    test_size = float(train_params.get("test_size", 0.2))
+    random_state = int(train_params.get("random_state", 42))
+    n_estimators = int(train_params.get("n_estimators", 150))
+    learning_rate = float(train_params.get("learning_rate", 0.05))
+    min_recall = float(train_params.get("min_recall", 0.7))
+
     X, y = build_feature_dataset(data_path)
 
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
-        test_size=0.2,
-        random_state=42,
+        test_size=test_size,
+        random_state=random_state,
         stratify=y,
     )
 
     model = LGBMClassifier(
-        n_estimators=150,
-        learning_rate=0.05,
+        n_estimators=n_estimators,
+        learning_rate=learning_rate,
         class_weight="balanced",
-        random_state=42,
+        random_state=random_state,
         verbose=-1,
     )
 
@@ -60,7 +70,7 @@ def train_model(data_path: Path = DATA_PATH) -> dict:
 
     y_scores = pipeline.predict_proba(X_test)[:, 1]
 
-    threshold = find_threshold_for_recall(y_test, y_scores, min_recall=0.70)
+    threshold = find_threshold_for_recall(y_test, y_scores, min_recall=min_recall)
 
     metrics = compute_binary_classification_metrics(
         y_true=y_test,
@@ -90,8 +100,8 @@ def train_model(data_path: Path = DATA_PATH) -> dict:
             mlflow.log_params(
                 {
                     "model_type": "LightGBM",
-                    "n_estimators": 150,
-                    "learning_rate": 0.05,
+                    "n_estimators": n_estimators,
+                    "learning_rate": learning_rate,
                     "class_weight": "balanced",
                     "threshold": metrics["threshold"],
                 }
@@ -109,7 +119,16 @@ def train_model(data_path: Path = DATA_PATH) -> dict:
             )
 
             mlflow.log_artifact(str(METRICS_PATH), artifact_path="reports")
-            mlflow.sklearn.log_model(pipeline, artifact_path="model")
+            mlflow.sklearn.log_model(
+                pipeline,
+                artifact_path="model",
+                skops_trusted_types=[
+                    "collections.OrderedDict",
+                    "lightgbm.basic.Booster",
+                    "lightgbm.sklearn.LGBMClassifier",
+                    "numpy.dtype",
+                ],
+            )
 
             metrics["mlflow_run_id"] = run.info.run_id
 

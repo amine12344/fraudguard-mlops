@@ -22,6 +22,12 @@ data/validation/*
 !data/samples/.gitkeep
 !data/validation/.gitkeep
 
+artifacts/*
+reports/**/*.json
+reports/**/*.txt
+reports/**/*.png
+!reports/**/.gitkeep
+
 # Artifacts
 artifacts/
 mlruns/

@@ -1,0 +1,63 @@
+stages:
+  data_synthetic:
+    cmd: PYTHONPATH=. python scripts/create_synthetic_sample.py
+    deps:
+      - scripts/create_synthetic_sample.py
+      - products/fraudguard/config_loader.py
+    params:
+      - data.synthetic_rows
+      - data.synthetic_seed
+    outs:
+      - data/samples/fraud_sample.parquet
+
+  data_validate:
+    cmd: PYTHONPATH=. python scripts/validate_data.py
+    deps:
+      - scripts/validate_data.py
+      - contracts/data_contract.py
+      - data/samples/fraud_sample.parquet
+    outs:
+      - reports/data/validation_report.json
+
+  features_build:
+    cmd: PYTHONPATH=. python products/fraudguard/features/build_features.py
+    deps:
+      - products/fraudguard/features/build_features.py
+      - products/fraudguard/features/feature_contract.py
+      - products/fraudguard/features/preprocessors.py
+      - data/samples/fraud_sample.parquet
+    outs:
+      - data/processed/features.parquet
+      - data/processed/target.parquet
+      - reports/features/feature_contract.json
+
+  train:
+    cmd: PYTHONPATH=. python products/fraudguard/training/train.py
+    deps:
+      - products/fraudguard/training/train.py
+      - products/fraudguard/evaluation/metrics.py
+      - products/fraudguard/evaluation/thresholding.py
+      - products/fraudguard/features/build_features.py
+      - products/fraudguard/features/preprocessors.py
+      - products/fraudguard/config_loader.py
+      - data/samples/fraud_sample.parquet
+    params:
+      - train.test_size
+      - train.random_state
+      - train.n_estimators
+      - train.learning_rate
+      - train.min_recall
+    outs:
+      - artifacts/fraud_model.joblib
+    metrics:
+      - reports/model/metrics.json:
+          cache: false
+
+  model_check:
+    cmd: PYTHONPATH=. python ci/quality-gates/check_metrics.py reports/model/metrics.json
+    deps:
+      - ci/quality-gates/check_metrics.py
+      - reports/model/metrics.json
+    params:
+      - quality_gate.min_roc_auc
+      - quality_gate.min_pr_auc

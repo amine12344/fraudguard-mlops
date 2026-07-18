@@ -1,0 +1,137 @@
+schema: '2.0'
+stages:
+  data_synthetic:
+    cmd: PYTHONPATH=. python scripts/create_synthetic_sample.py
+    deps:
+    - path: products/fraudguard/config_loader.py
+      hash: md5
+      md5: 480689e1d706afb3ce8dc3b7b1dccde0
+      size: 226
+    - path: scripts/create_synthetic_sample.py
+      hash: md5
+      md5: 81bcc6c33fc4df89ec8a91214afb962d
+      size: 2739
+    params:
+      params.yaml:
+        data.synthetic_rows: 5000
+        data.synthetic_seed: 42
+    outs:
+    - path: data/samples/fraud_sample.parquet
+      hash: md5
+      md5: c7cd6855374a517199fff1da366b0a23
+      size: 112708
+  data_validate:
+    cmd: PYTHONPATH=. python scripts/validate_data.py
+    deps:
+    - path: contracts/data_contract.py
+      hash: md5
+      md5: 22042fe514d12d46cf8af2173aca8ddf
+      size: 1351
+    - path: data/samples/fraud_sample.parquet
+      hash: md5
+      md5: c7cd6855374a517199fff1da366b0a23
+      size: 112708
+    - path: scripts/validate_data.py
+      hash: md5
+      md5: 6b0c6a3231124854d0ff9a58244c1360
+      size: 1263
+    outs:
+    - path: reports/data/validation_report.json
+      hash: md5
+      md5: eb31ef9ba8f940462f59e9667a32263a
+      size: 128
+  features_build:
+    cmd: PYTHONPATH=. python products/fraudguard/features/build_features.py
+    deps:
+    - path: data/samples/fraud_sample.parquet
+      hash: md5
+      md5: c7cd6855374a517199fff1da366b0a23
+      size: 112708
+    - path: products/fraudguard/features/build_features.py
+      hash: md5
+      md5: 8c06f8805c536e7c3c5a44e683a5a8ed
+      size: 1862
+    - path: products/fraudguard/features/feature_contract.py
+      hash: md5
+      md5: 7eeac98fc109518ce579a84c2a271795
+      size: 1227
+    - path: products/fraudguard/features/preprocessors.py
+      hash: md5
+      md5: 9d5fb2f701a68d1eef5c58fca05ccf83
+      size: 1111
+    outs:
+    - path: data/processed/features.parquet
+      hash: md5
+      md5: 077dfbb14bd3e091f28faa89a6d11e2a
+      size: 82909
+    - path: data/processed/target.parquet
+      hash: md5
+      md5: 00d3e2f691aad54d9b1ff16a9511e22f
+      size: 1688
+    - path: reports/features/feature_contract.json
+      hash: md5
+      md5: 7400b0031b3ae240a90dbd5d5ac0d559
+      size: 957
+  train:
+    cmd: PYTHONPATH=. python products/fraudguard/training/train.py
+    deps:
+    - path: data/samples/fraud_sample.parquet
+      hash: md5
+      md5: c7cd6855374a517199fff1da366b0a23
+      size: 112708
+    - path: products/fraudguard/config_loader.py
+      hash: md5
+      md5: 480689e1d706afb3ce8dc3b7b1dccde0
+      size: 226
+    - path: products/fraudguard/evaluation/metrics.py
+      hash: md5
+      md5: a77e47c8aa926168c06a803d354b513b
+      size: 692
+    - path: products/fraudguard/evaluation/thresholding.py
+      hash: md5
+      md5: 1c5bc3635a3647ec3c580cac0d8549c1
+      size: 471
+    - path: products/fraudguard/features/build_features.py
+      hash: md5
+      md5: 8c06f8805c536e7c3c5a44e683a5a8ed
+      size: 1862
+    - path: products/fraudguard/features/preprocessors.py
+      hash: md5
+      md5: 9d5fb2f701a68d1eef5c58fca05ccf83
+      size: 1111
+    - path: products/fraudguard/training/train.py
+      hash: md5
+      md5: 4250a7fb18d92abe45d781a0330df39f
+      size: 4265
+    params:
+      params.yaml:
+        train.learning_rate: 0.04
+        train.min_recall: 0.7
+        train.n_estimators: 350
+        train.random_state: 42
+        train.test_size: 0.2
+    outs:
+    - path: artifacts/fraud_model.joblib
+      hash: md5
+      md5: 8fa1468945ac2dabe72a98824dff9911
+      size: 994447
+    - path: reports/model/metrics.json
+      hash: md5
+      md5: 88633d5adbb6d3d820f16bfc3275d0ad
+      size: 279
+  model_check:
+    cmd: PYTHONPATH=. python ci/quality-gates/check_metrics.py 
+      reports/model/metrics.json
+    deps:
+    - path: ci/quality-gates/check_metrics.py
+      hash: md5
+      md5: 76a9789af2cd7b6af0164e73ebd60b7d
+      size: 1442
+    - path: reports/model/metrics.json
+      hash: md5
+      md5: 88633d5adbb6d3d820f16bfc3275d0ad
+      size: 279
+    params:
+      params.yaml:
+        quality_gate.min_pr_auc: 0.03
+        quality_gate.min_roc_auc: 0.7

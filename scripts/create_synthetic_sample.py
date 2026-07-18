@@ -3,6 +3,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from products.fraudguard.config_loader import load_params
+
 OUTPUT_PATH = Path("data/samples/fraud_sample.parquet")
 
 
@@ -53,8 +55,14 @@ def create_synthetic_sample(n_rows: int = 5000, seed: int = 42) -> pd.DataFrame:
 
 
 def main() -> None:
+    params = load_params()
+    data_params = params.get("data", {})
+
+    n_rows = int(data_params.get("synthetic_rows", 5000))
+    seed = int(data_params.get("synthetic_seed", 42))
+
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    df = create_synthetic_sample()
+    df = create_synthetic_sample(n_rows=n_rows, seed=seed)
     df.to_parquet(OUTPUT_PATH, index=False)
 
     print(f"Created synthetic sample: {OUTPUT_PATH}")

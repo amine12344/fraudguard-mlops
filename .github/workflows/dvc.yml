@@ -1,0 +1,77 @@
+name: dvc
+
+on:
+  pull_request:
+    paths:
+      - "dvc.yaml"
+      - "dvc.lock"
+      - "params.yaml"
+      - ".dvc/**"
+      - "scripts/**"
+      - "contracts/**"
+      - "products/fraudguard/**"
+      - "ci/quality-gates/**"
+      - ".github/workflows/dvc.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dvc-repro:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install -U pip
+          pip install -e .
+
+      - name: Run DVC pipeline
+        env:
+          PYTHONPATH: .
+        run: |
+          dvc repro
+
+      - name: Generate DVC lineage report
+        env:
+          PYTHONPATH: .
+        run: |
+          python scripts/generate_dvc_lineage.py
+
+      - name: Write DVC summary
+        if: always()
+        run: |
+          echo "## FraudGuard DVC Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### DAG" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          dvc dag >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          echo "### Metrics" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          cat reports/model/metrics.json >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload DVC reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dvc-reports
+          path: |
+            reports/dvc
+            reports/model/metrics.json
+            reports/data
+            reports/features
+            dvc.lock

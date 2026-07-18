@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraudguard-inference
+  namespace: fraudguard
+  labels:
+    app: fraudguard-inference
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fraudguard-inference
+  template:
+    metadata:
+      labels:
+        app: fraudguard-inference
+    spec:
+      containers:
+        - name: inference-api
+          image: fraudguard-inference:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+          env:
+            - name: MODEL_THRESHOLD
+              value: "0.5"
+            - name: MODEL_VERSION
+              value: "local"
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
